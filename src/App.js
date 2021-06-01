@@ -64,7 +64,7 @@ function App() {
       <form className='app__form'>
         <FormControl className="app__formControl">
           <Input className="app__input" placeholder="Enter a message ..." value={input} onChange={(e) => { setInput(e.target.value) }} id="input" aria-describedby="my-helper-text" />
-          <IconButton className="app__iconButton" variant="contained" disabled={!input || !username} color="primary" type='submit' onClick={sendMesssage}>
+          <IconButton className="app__iconButton" variant="contained" color="primary" type='submit' onClick={sendMesssage}>
             <Send />
           </IconButton>
         </FormControl>
