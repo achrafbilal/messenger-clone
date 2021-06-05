@@ -1,3 +1,9 @@
+body {
+  height: 100vh;
+}
+#root {
+  height: 50%;
+}
 .App {
   text-align: center;
 }
@@ -25,4 +31,8 @@
 }
 .app__messages {
   bottom: 80px;
+}
+.register__container,
+.login__container {
+  margin: 50px;
 }

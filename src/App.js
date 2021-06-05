@@ -1,87 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { FormControl, Input, IconButton } from '@material-ui/core'
-import './App.css';
-import Message from './components/Message/Message';
-import db from './firebase';
+import React, { useState } from 'react';
+import "./bootswatch.min.css";
+import "./App.css";
 import firebase from 'firebase';
-import { VpnKey, Send } from '@material-ui/icons';
-import FlipMove from 'react-flip-move';
+import db from './firebase';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import Index from './screens/Index';
+import Groups from './screens/Groups';
+import Login from './screens/Login';
+import Register from './screens/Register';
+import Header from './components/Head/Header';
 function App() {
-  const [input, setInput] = useState("")
-  const [username, setUsername] = useState("")
-  const [messages, setMessages] = useState([])
-  useEffect
-    (
-      () => {
-        db.collection("messages")
-          .orderBy('timestamp', 'desc')
-          .onSnapshot(
-            snapshot => {
-              setMessages(
-                snapshot.docs.map
-                  (
-                    doc =>
-                    (
-                      {
-                        id: doc.id,
-                        message: doc.data()
-                      }
-                    )
-                  )
-              )
-            }
-          )
-      },
-      []
-    )
-
-  // useEffect(() => {
-  //   setUsername(prompt('please enter your username'))
-  // }, [])
-
-  const sendMesssage = (e) => {
-    e.preventDefault();
-    if (username)
-      db.collection("messages").add({
-        message: input,
-        username: username,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      })
-    else setUsername(prompt('please enter your username'))
-    //setMessages([...messages, { username: username, text: input }])
-    setInput("");
-  }
-  return (
-    <div className="App ">
-      <img src={'/imgs/logo.png'} alt='logo' width={60} height={60} />
-      <h1>
-        <center>
-          Welcome {username}
-        </center>
-        <VpnKey onClick={() => setUsername(prompt('please enter your username'))} />
-      </h1>
-      <form className='app__form'>
-        <FormControl className="app__formControl">
-          <Input className="app__input" placeholder="Enter a message ..." value={input} onChange={(e) => { setInput(e.target.value) }} id="input" aria-describedby="my-helper-text" />
-          <IconButton className="app__iconButton" variant="contained" color="primary" type='submit' onClick={sendMesssage}>
-            <Send />
-          </IconButton>
-        </FormControl>
-        &copy; {new Date().getFullYear()} Copyright: <a href="https://messenger-clone-90f92.web.app/"> Achraf.com </a>
-      </form>
-      <FlipMove className="app__messages">
-        {
-          messages.map
+  const users = db.collection('users');
+  const [user, setUser] = useState({ email: "achraf", password: "achraf" })
+  const [auth, setAuth] = useState(false)
+  const connect = (u) => {
+    users.where('email', '==', u.email).where('password', '==', u.password).get().then
+      (
+        (querySnapshot) => {
+          querySnapshot.forEach
             (
-              (
-                { id, message }
-              ) =>
-                <Message username={username} key={id} message={message} />
-            )
+              element => {
+                setUser({ ...element.data(), id: element.id });
+                setAuth(true);
+                console.log(element.data(), user, auth)
+              }
+            );
         }
-      </FlipMove>
-    </div>
+      )
+      .catch
+      (
+        (error) =>
+          console.log(error)
+      )
+  }
+  const register = async (u) => {
+    const res = await users.add({
+      email: u.email,
+      password: u.password,
+      name: u.name,
+      phone: u.phone,
+      role: 'user'
+    });
+    console.log(res);
+  }
+  const logout = () => {
+    setAuth(false)
+    setUser({ email: "guest", password: "" })
+  }
+
+  return (
+    <Router>
+      <Header auth={auth} logout={logout} />
+      <Switch>
+        <Route path="/s" exact>
+          <h1>wash</h1>
+
+        </Route>
+        <Route path="/" exact>
+          {
+            auth ? <Index user={user} /> : <Login log={connect} />
+          }
+        </Route>
+        <Route path="/login" exact>
+          {
+            auth ? <Index user={user} /> : <Login log={connect} />
+          }
+
+        </Route>
+        <Route path="/register" exact>
+          {
+            auth ? <Index user={user} /> : <Register register={register} />
+          }
+
+        </Route>
+        <Route path="/groups" exact>
+          {
+            auth ? <Groups user={user} /> : <Login log={connect} />
+          }
+        </Route>
+        <Route path="/logout" exact>
+
+          <Login log={connect} />
+
+        </Route>
+
+      </Switch>
+    </Router>
   );
 }
 
